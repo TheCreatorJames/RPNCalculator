@@ -1,0 +1,116 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.3.0/math.min.js"></script>
+<script src="rpn_parser.js"></script>
+<script>
+
+//Platform Specific Stuff
+function alt(x)
+{
+  setTimeout(function() { document.getElementById("outputError").innerHTML += "<br>Error on Token: "+(x); }, 100);
+}
+
+var parser = new RPNParser(math, alt);
+
+function keyDownEvent(e)
+{
+  if(e.keyCode == 13) //on enter
+  {
+    if(!(e.altKey || e.shiftKey)) //needed both for various environments.
+    {
+      e.preventDefault();
+    } else return;
+
+    //alert(document.getElementById("in").innerHTML);
+    document.getElementById("outputError").innerHTML = "";
+
+    //hackish approach to try to support multiple engines.
+    var txt = document.getElementById("in").innerHTML.replace(/\n/g, " ").replace(/\<br\>/g, " </div>").replace(/\<br \/\>/g, " </div>");
+    var lines = txt.split("</div>"); //might need to be switched to <br> depending on the engine.
+
+    document.getElementById("out2").innerHTML = "";
+    for(var i =0; i <lines.length; i++)
+    {
+      var line = lines[i].replace(/[&][A-Za-z]+[;]/g + " ").split("#");
+      var suppress = false;
+      var comment = "";
+      if(line.length != 1)
+      {
+        comment = "#" + line[1];
+      }
+      line = " " + line[0].replace(/\<[A-Za-z /]+\>/g, " ").replace(/\&nbsp\;/g, " ") + " ";
+      if(line.charAt(line.length - 2) == "!")
+      {
+        line = line.substring(0, line.length -2) + " ";
+        suppress = true;
+       }
+
+      if(line.length == 0 || line.trim().length == 0)
+      {
+        if(i ==0 && comment == "") continue;
+        document.getElementById("out2").innerHTML += comment + "<br>";
+        continue;
+      }
+      parser.parse(line);
+      var calculation = parser.peeks();
+      if(suppress) calculation = "";
+      document.getElementById("out2").innerHTML += calculation + " " + comment + "<br>";
+      //alt(lines[i]);
+    }
+
+
+    render();
+
+  }
+}
+
+
+function render()
+{
+  var el = document.getElementById("out");
+  el.innerHTML = "";
+
+  for(var i =0; i< parser.stacker.length; i++)
+  {
+    el.innerHTML += parser.stacker[i] + "<br>";
+  }
+}
+
+
+// todo: modify the handler to support engines that use <br> instead of <div>, I think this is done now.
+function init()
+{
+  document.getElementById("in").addEventListener("paste", function(e) {
+    // cancel paste
+    e.preventDefault();
+
+    // get text representation of clipboard
+    var text = e.clipboardData.getData("text/plain").split("\n");
+    var text2 = "";
+    for(var i = 0; i < text.length; i++)
+    {
+
+      if(text[i].trim().length == 0) { text[i] = "&nbsp;" }
+
+      if(i + 1 != text.length)
+      {
+        text2 += "" + text[i].replace("\n", "") + "  <br> "; //may need to be modified to use <br> | Complete.
+      }
+      else
+      {
+        text2 += text[i].replace(/\n/g, "");
+      }
+    }
+
+    // insert text manually
+    document.execCommand("insertHTML", false, text2);
+});
+
+}
+</script>
+<body onload="init()">
+<div id="out">
+</div>
+<div style="background-color: rgb(240,240,240); width: 48%; float: left;" contenteditable="true" id="in" onkeydown="keyDownEvent(event);" > </div>
+<div style="background-color: rgb(240,240,240); width:48%; float: right;" id="out2">&nbsp;</div>
+<br><div id="outputError">
+</div>
+</body>
