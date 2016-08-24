@@ -110,7 +110,6 @@ function RPNParser(math, alt)
     return math.multiply(math.divide(val, conversions[chainName][node1]), conversions[chainName][node2]);
   }
 
-
   function initConversions()
   {
     makeConversionChain("dist", "m");
@@ -257,7 +256,6 @@ function RPNParser(math, alt)
     return stacker.pop();
   }
 
-
   //peek string function, returns empty string if nothing to be returned
   function peeks()
   {
@@ -288,7 +286,6 @@ function RPNParser(math, alt)
     return vars[x];
   }
 
-
   function tryExtensions(word)
   {
     for(var i = 0; i < added_extensions.length; i++)
@@ -307,13 +304,11 @@ function RPNParser(math, alt)
       else
       if(word == "K")
       {
-        //parse("1 4 PI Eo * * /");
         push(1 / (Math.PI * 8.854e-12 * 4));
       }
       else
       if(word == "Uo")
       {
-        //parse("4 PI * 1e-7 *");
         push(4*Math.PI*1e-7);
       }
       else
@@ -347,7 +342,6 @@ function RPNParser(math, alt)
       }
       return true;
   }
-
 
   function basicMathOperations(word)
   {
@@ -402,12 +396,25 @@ function RPNParser(math, alt)
         push(math.abs(pop(true)));
       }
       else
-      if(word == "min" || word == "max")
+      if(word == "min" || word == "max" || word == "lcm2" || word == "gcd2")
       {
         var a = pop(true);
         var b = a[0];
         var c = math.min;
-        if(word == "max") c = math.max;
+
+        switch(word)
+        {
+          case "max":
+            c = math.max;
+          break;
+          case "lcm2":
+            c = math.lcm;
+          break;
+          case "gcd2":
+              c = math.gcd;
+          break;
+        }
+
         for(var i = 1; i < a.length; i++)
         {
           b = c(b, a[i]);
@@ -436,7 +443,6 @@ function RPNParser(math, alt)
     return true;
 
   }
-
 
   function extensions(word)
   {
@@ -576,7 +582,6 @@ function RPNParser(math, alt)
       var word = dat[i];
       if(word.length == 0) continue;
 
-
       if(word.indexOf("..") != -1)
       {
         var a = parseInt(word.split("..")[0]);
@@ -625,7 +630,9 @@ function RPNParser(math, alt)
       else
       if(word == "clear")
       {
+        var t = stacker;
         stacker = [];
+        delete t;
       }
       else
       if(word == "swap")
@@ -647,8 +654,6 @@ function RPNParser(math, alt)
       }
     }
   }
-
-
 
   function clone(obj)
   {
@@ -676,7 +681,6 @@ function RPNParser(math, alt)
       else
       return false;
     }
-
 
     if(word == "+")
     {
@@ -925,8 +929,12 @@ function RPNParser(math, alt)
   {
     return a.concat(b);
   }
+
   this.parse = parse;
-  this.getStack = function() { return stacker; }
+  this.getStack = function()
+  {
+    return stacker;
+  }
   this.peeks = peeks;
   this.pop = pop;
   this.peek = peek;
@@ -937,10 +945,7 @@ function RPNParser(math, alt)
   }
 }
 
-if(typeof(module) === "undefined" || typeof(module.exports) === "undefined")
-{
-
-}
+if(typeof(module) === "undefined" || typeof(module.exports) === "undefined");
 else
 {
     module.exports = RPNParser;
