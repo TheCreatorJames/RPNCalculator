@@ -9,9 +9,9 @@ var parser = new RPNParser(math, alt);
 //Platform Specific Stuff.
 function render()
 {
-    for(var i =0; i< parser.stacker.length; i++)
+    for(var i =0; i< parser.getStack().length; i++)
     {
-        console.log(parser.stacker[i].toString());
+        console.log(parser.getStack()[i].toString());
     }
 }
 

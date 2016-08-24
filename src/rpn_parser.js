@@ -926,7 +926,7 @@ function RPNParser(math, alt)
     return a.concat(b);
   }
   this.parse = parse;
-  this.stacker = stacker;
+  this.getStack = function() { return stacker; }
   this.peeks = peeks;
   this.pop = pop;
   this.peek = peek;

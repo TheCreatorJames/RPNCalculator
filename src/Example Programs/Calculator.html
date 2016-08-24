@@ -68,9 +68,9 @@ function render()
   var el = document.getElementById("out");
   el.innerHTML = "";
 
-  for(var i =0; i< parser.stacker.length; i++)
+  for(var i =0; i< parser.getStack().length; i++)
   {
-    el.innerHTML += parser.stacker[i] + "<br>";
+    el.innerHTML += parser.getStack()[i] + "<br>";
   }
 }
 
