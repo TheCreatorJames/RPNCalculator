@@ -21,13 +21,13 @@ function keyDownEvent(e)
 
     //alert(document.getElementById("in").innerHTML);
     document.getElementById("outputError").innerHTML = "";
-
+	
     //hackish approach to try to support multiple engines.
-     var txt = document.getElementById("in").innerHTML.replace(/\n/g, "_").replace(/\<br\>/g, " </div>").replace(/\<br \/\>/g, " </div>");
-    var lines = txt.split("</div>"); //might need to be switched to <br> depending on the engine.
-
-    document.getElementById("out2").innerHTML = "";
-    for(var i =0; i <lines.length; i++)
+    var txt = document.getElementById("in").innerHTML.replace(/\<div\>\<\/div\>/g, "<piv>").replace(/\<div\>\<br\>/g, "<div>").replace(/\n/g, "").replace(/\<br\>/g, " <div>").replace(/\<br \/\>/g, " <div>").replace(/\<piv\>/g, "<div>");
+    var lines = txt.split("<div>"); //might need to be switched to <br> depending on the engine.
+	
+	document.getElementById("out2").innerHTML = "";
+    for(var i =0; i < lines.length; i++)
     {
 	  var line = lines[i].replace(/[&][A-Za-z]+[;]/g + " ");
 	  
@@ -40,20 +40,19 @@ function keyDownEvent(e)
 		line = [ line.substring(0, line.indexOf("#")), line.substring(line.indexOf("#")+ "#".length) ];
 	  }
 
-      var suppress = false;
+	  var suppress = false;
       var comment = "";
       if(line.length != 1)
       {
 		if(line[1].indexOf("<div>") != -1)
 		{
 			var pos = line[1].indexOf("<div>"); 
-			lines[i] = line[1].substring(pos + "<div>".length);
+			lines[i] = line[1].substring(pos + "<div>".length).trim();
 			i--;
 			line[1] = line[1].substring(0, pos);
 		}
         comment = "#" + line[1];
       }
-      
       line = " " + line[0].replace(/\<[A-Za-z /]+\>/g, " ").replace(/\&nbsp\;/g, " ") + " ";
       if(line.charAt(line.length - 2) == "!")
       {
@@ -71,7 +70,8 @@ function keyDownEvent(e)
       var calculation = parser.peeks();
       if(suppress) calculation = "";
       document.getElementById("out2").innerHTML += calculation + " " + comment + "<br>";
-      //alt(lines[i]);
+
+	  //alt(lines[i]);
     }
 
 
@@ -79,7 +79,6 @@ function keyDownEvent(e)
 
   }
 }
-
 
 function render()
 {
