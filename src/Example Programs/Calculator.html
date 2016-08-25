@@ -23,19 +23,37 @@ function keyDownEvent(e)
     document.getElementById("outputError").innerHTML = "";
 
     //hackish approach to try to support multiple engines.
-    var txt = document.getElementById("in").innerHTML.replace(/\n/g, " ").replace(/\<br\>/g, " </div>").replace(/\<br \/\>/g, " </div>");
+     var txt = document.getElementById("in").innerHTML.replace(/\n/g, "_").replace(/\<br\>/g, " </div>").replace(/\<br \/\>/g, " </div>");
     var lines = txt.split("</div>"); //might need to be switched to <br> depending on the engine.
 
     document.getElementById("out2").innerHTML = "";
     for(var i =0; i <lines.length; i++)
     {
-      var line = lines[i].replace(/[&][A-Za-z]+[;]/g + " ").split("#");
+	  var line = lines[i].replace(/[&][A-Za-z]+[;]/g + " ");
+	  
+	  if(line.indexOf("#") == -1)
+	  {
+		line = [ line ];
+	  }
+	  else
+	  {
+		line = [ line.substring(0, line.indexOf("#")), line.substring(line.indexOf("#")+ "#".length) ];
+	  }
+
       var suppress = false;
       var comment = "";
       if(line.length != 1)
       {
+		if(line[1].indexOf("<div>") != -1)
+		{
+			var pos = line[1].indexOf("<div>"); 
+			lines[i] = line[1].substring(pos + "<div>".length);
+			i--;
+			line[1] = line[1].substring(0, pos);
+		}
         comment = "#" + line[1];
       }
+      
       line = " " + line[0].replace(/\<[A-Za-z /]+\>/g, " ").replace(/\&nbsp\;/g, " ") + " ";
       if(line.charAt(line.length - 2) == "!")
       {
