@@ -444,8 +444,41 @@ function RPNParser(math, alt)
 
   }
 
+  function fraction(x)
+  {
+    function frac(x)
+    {
+        if((""+x).indexOf(".") != -1)
+        {
+          var w = ("" + x).split(".");
+          w[0] = parseInt(w[0]);
+          w[1] = parseInt(w[1]);
+          return [ w[1], math.pow(10, (""+w[1]).length), w[0]];
+        }
+        else
+        {
+            return [0, 1, x];
+        }
+    }
+
+    var a = frac(x);
+    var gcd = math.gcd(a[0], a[1]);
+    return [a[2]*(a[1]/gcd) + a[0]/gcd, a[1]/gcd];
+  }
+
   function extensions(word)
   {
+    if(word == "frac" || word == "fraction")
+    {
+      var a = pop(true);
+      var b = [];
+      for(var i = 0; i < a.length; i++)
+      {
+          b = b.concat(fraction(a[i]));
+      }
+      push(b);
+    }
+    else
     if(word == "seq")
     {
       var a = pop(true);
@@ -806,27 +839,43 @@ function RPNParser(math, alt)
       return true;
     }
     else
-    if (word == "multVector")
+    if (word == "multVector" || word == "divVector")
     {
-      var a = pop(true);
       var b = pop(true);
+      var a = pop(true);
       var lim = Math.min(a.length, b.length);
       var c = [];
       for(var i = 0; i < lim; i++)
       {
-        c.push(a[i] * b[i]);
+        if(word == "multVector")
+        {
+          c.push(a[i] * b[i]);
+        }
+        else
+        {
+          c.push(a[i] / b[i]);
+        }
       }
       push(c);
       return true;
     }
     else
-    if ( word == "sum" )
+    if ( word == "sum" || word == "product" )
     {
       var a = pop(true);
       var sum = 0;
       for(var i = 0; i < a.length; i++)
       {
-        sum += a[i];
+        if(word == "sum")
+        {
+          sum += a[i];
+        }
+        else
+        {
+          if(i==0)
+            sum = 1;
+          sum *= a[i];
+        }
       }
       push(sum);
       return true;
