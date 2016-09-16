@@ -994,6 +994,7 @@ function RPNParser(math, alt)
 
       for(var i = 0; i < b.length; i++)
       {
+        if(a.indexOf(b[i]) != -1)
         {
           a.splice(a.indexOf(b[i]), 1);
         }
