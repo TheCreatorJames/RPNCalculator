@@ -468,6 +468,7 @@ function RPNParser(math, alt)
 
   function extensions(word)
   {
+    // this part needs refractored at some point. It barely works.
     if(word == "frac" || word == "fraction")
     {
       var a = pop(true);
@@ -479,7 +480,7 @@ function RPNParser(math, alt)
       push(b);
     }
     else
-    if(word == "seq")
+    if (word == "seq")
     {
       var a = pop(true);
       if(a.length >= 2)
@@ -492,18 +493,40 @@ function RPNParser(math, alt)
         var arr = [];
 
         if(a[0] < a[1])
-        for(var i = a[0]; i <= a[1]; i += b)
         {
-          arr.push(i);
+          for(var i = a[0]; i <= a[1]; i += b)
+          {
+            arr.push(i);
+          }
         }
         else
-        for(var i = a[0]; i >= a[1]; i -= b)
         {
-          arr.push(i);
+          for(var i = a[0]; i >= a[1]; i -= b)
+          {
+            arr.push(i);
+          }
         }
         push(arr);
       }
       else return false;
+    }
+    else
+    if (word == "combination" || word == "nCr" || word == "comb")
+    {
+      var a = pop(true);
+      push(math.combinations(a[0], a[1]));
+    }
+    else
+    if (word == "permutation" || word == "perm" || word == "nPr")
+    {
+      var a = pop(true);
+      push(math.permutations(a[0], a[1]));
+    }
+    else
+    if (word == "multinomial")
+    {
+      var a = pop(true);
+      push(math.multinomial(a));
     }
     else return false;
     return true;
@@ -961,6 +984,28 @@ function RPNParser(math, alt)
         }
       }
       push(c);
+      return true;
+    }
+    else
+    if (word == "diff")
+    {
+      var b = pop(true);
+      var a = pop(true);
+
+      for(var i = 0; i < b.length; i++)
+      {
+        {
+          a.splice(a.indexOf(b[i]), 1);
+        }
+      }
+
+      push(a);
+      return true;
+    }
+    else
+    if (word == "udiff")
+    {
+      parse("%b pop %a $b diff $b $a diff union");
       return true;
     }
 
