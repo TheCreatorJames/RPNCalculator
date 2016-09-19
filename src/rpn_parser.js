@@ -12,6 +12,20 @@ function RPNParser(math, alt)
     conversions[chainName][root] = 1;
   }
 
+  function pullConversions(destChainName, sourceChainName, destBase, sourceBase, proc)
+  {
+    var keys = Object.keys(conversions[sourceChainName]);
+    var a = proc(sourceBase, sourceBase);
+    addConversion(destChainName, destBase, a[0], 1);
+    for(var i = 0; i < keys.length; i++)
+    {
+
+      if(keys[i] == sourceBase) continue;
+      a = proc(sourceBase, keys[i]);
+      addConversion(destChainName, destBase, a[0], a[1]);
+    }
+  }
+
   function reverseRPN(sentence)
   {
     var result = " ";
@@ -112,19 +126,52 @@ function RPNParser(math, alt)
 
   function initConversions()
   {
+    function simp(a,b)
+    {
+      makeConversionChain("metric", "none");
+      for(var i = 0; i < a.length; i++)
+      {
+        addConversion("metric", "none", a[i], 1/b[i]);
+      }
+      addConversion("metric", "none", "", 1);
+      addConversion("metric", "none", "normal", 1);
+    }
+
+    var a = ["exa", "peta", "tera", "giga", "mega", "kilo", "hecto", "deca", "deci", "centi", "milli", "micro", "nano", "pico", "femto", "atto"];
+    var b = [1e18, 1e15, 1e12, 1e9, 1e6, 1e3, 1e2, 1e1, 1e-1, 1e-2, 1e-3, 1e-6, 1e-9, 1e-12, 1e-15, 1e-18];
+
+    simp(a,b);
+
+    //adds commonly accepted abbreviations
+    function abbreviationQuickFix(source, post, post2)
+    {
+      addConversion(source, "kilo" + post, "k" + post2, 1);
+      addConversion(source, "centi" + post, "c" + post2, 1);
+      addConversion(source, "milli" + post, "m" + post2, 1);
+      addConversion(source, "nano" + post, "n" + post2, 1);
+      addConversion(source, "micro" + post, "u" + post2, 1);
+      addConversion(source, "pico" + post, "p" + post2, 1);
+      addConversion(source, "femto" + post, "f" + post2, 1);
+    }
+
     makeConversionChain("dist", "m");
     addConversion("dist", "m", "meter", 1);
-    addConversion("dist", "m", ["cm", "centimeter", "centimeters"], 100);
+
+    //Adds metric versions of distance.
+    pullConversions("dist", "metric", "m", "", function(s,o)
+    {
+      var a = convert("metric", 1, s, o);
+      return [[o+"meter", "meters"], a];
+    });
+
+    //adds metric abbreviations.
+    abbreviationQuickFix("dist", "meter", "m");
+
+    //adds American units.
     addConversion("dist", "cm", ["in", "inch", "inches"], .3937);
     addConversion("dist", "in", ["ft", "feet"], 1 / 12);
     addConversion("dist", "ft", ["yd", "yards"], 1 / 3);
     addConversion("dist", "ft", ["mi", "mile", "miles"], 1 / 5280);
-    addConversion("dist", "m", ["km", "kilometer", "kilometers"], 1 / 1e3);
-    addConversion("dist", "m", ["mm", "millimeter", "millimeters"], 1e3);
-    addConversion("dist", "m", ["nm", "nanometer", "nanometers"], 1e9);
-    addConversion("dist", "m", ["um", "micrometer", "micrometers"], 1e6);
-    addConversion("dist", "m", ["pm", "picometer", "micrometers"], 1e12);
-    addConversion("dist", "m", ["fm", "femtometer", "femtometers"], 1e15);
     addConversion("dist", "m", ["nautical_mile", "Nautical-Mile", "Nautical_Mile", "nautical-mile"], 1 / 1852);
 
     makeConversionChain("angle", "rad");
@@ -145,9 +192,13 @@ function RPNParser(math, alt)
     addConversion("volume", "gallon", ["liter", "Liter", "L", "l"], 3.78541);
     addConversion("volume", "liter", ["mL", "ml"], 1000);
     addConversion("volume", "liter", ["cubic_m", "m^3", "cubic_meter", "cubic_meters"], 1 / 1000);
-    addConversion("volume", "mL", ["cm^3", "cubic_centimeter", "cubic_centimeters", "cubic_cm"], 1);
-    addConversion("volume", "mL", ["in^3", "cubic_inch", "cubic_in", "cubic_inches"], 0.0610237);
-    addConversion("volume", "in^3", ["ft^3", "cubic_feet", "cubic_foot", "cubic_ft"], 1 / 1728);
+    pullConversions("volume", "dist", "mL", "cm", function(s, o)
+    {
+      var a = convert("dist", 1, s, o);
+      a = Math.pow(a,3);
+      return [o + "^3", a];
+    });
+
 
     makeConversionChain("temp", "F");
     conversions["temp"]["F"] = "";
@@ -167,7 +218,17 @@ function RPNParser(math, alt)
 
     makeConversionChain("mass", "kg");
     addConversion("mass", "kg", "g", 1e3);
-    addConversion("mass", "kg", ["kilogram", "Kilogram", "KG"], 1);
+
+    //pulls metric into the mass.
+    pullConversions("mass", "metric", "g", "", function(s,o)
+    {
+      var a = convert("metric", 1, s, o);
+      return [[o+"gram", "grams"], a];
+    });
+
+    //adds common abbreviations to mass.
+    abbreviationQuickFix("mass", "gram", "g");
+
     addConversion("mass", "kg", "lbs", 1 / 0.453592);
     addConversion("mass", "lbs", ["pounds", "pound", "Pound", "Pounds", "lb", "lbm"], 1);
     addConversion("mass", "lbs", "oz", 16);
@@ -214,24 +275,6 @@ function RPNParser(math, alt)
     addConversion("cpu", "Mb", "Gb", 1 / 1000);
     addConversion("cpu", "Gb", "Tb", 1 / 1000);
     addConversion("cpu", "Tb", "Pb", 1 / 1000);
-
-    function simp(a,b)
-    {
-      makeConversionChain("metric", "none");
-      for(var i = 0; i < a.length; i++)
-      {
-        addConversion("metric", "none", a[i], 1/b[i]);
-      }
-      addConversion("metric", "none", "", 1);
-      addConversion("metric", "none", "normal", 1);
-    }
-
-    var a = ["exa", "peta", "tera", "giga", "mega", "kilo", "hecto", "deca", "deci", "centi", "milli", "micro", 	"nano", "pico", "femto", "atto"];
-
-    var b = [1e18, 1e15, 1e12, 1e9, 1e6, 1e3, 1e2, 1e1, 1e-1, 1e-2, 1e-3, 1e-6, 1e-9, 1e-12, 1e-15, 1e-18];
-
-    simp(a,b);
-
   }
   initConversions();
 
