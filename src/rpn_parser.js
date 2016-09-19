@@ -114,17 +114,18 @@ function RPNParser(math, alt)
   {
     makeConversionChain("dist", "m");
     addConversion("dist", "m", "meter", 1);
-    addConversion("dist", "m", ["cm", "centimeter"], 100);
+    addConversion("dist", "m", ["cm", "centimeter", "centimeters"], 100);
     addConversion("dist", "cm", ["in", "inch", "inches"], .3937);
     addConversion("dist", "in", ["ft", "feet"], 1 / 12);
-    addConversion("dist", "ft", "yards", 1 / 3);
+    addConversion("dist", "ft", ["yd", "yards"], 1 / 3);
     addConversion("dist", "ft", ["mi", "mile", "miles"], 1 / 5280);
-    addConversion("dist", "m", ["km", "kilometer"], 1 / 1e3);
-    addConversion("dist", "m", ["mm", "millimeter"], 1e3);
-    addConversion("dist", "m", ["nm", "nanometer"], 1e9);
-    addConversion("dist", "m", ["um", "micrometer"], 1e6);
-    addConversion("dist", "m", ["pm", "picometer"], 1e12);
-    addConversion("dist", "m", ["fm", "femtometer"], 1e15);
+    addConversion("dist", "m", ["km", "kilometer", "kilometers"], 1 / 1e3);
+    addConversion("dist", "m", ["mm", "millimeter", "millimeters"], 1e3);
+    addConversion("dist", "m", ["nm", "nanometer", "nanometers"], 1e9);
+    addConversion("dist", "m", ["um", "micrometer", "micrometers"], 1e6);
+    addConversion("dist", "m", ["pm", "picometer", "micrometers"], 1e12);
+    addConversion("dist", "m", ["fm", "femtometer", "femtometers"], 1e15);
+    addConversion("dist", "m", ["nautical_mile", "Nautical-Mile", "Nautical_Mile", "nautical-mile"], 1 / 1852);
 
     makeConversionChain("angle", "rad");
     addConversion("angle", "rad", "deg", 180 / Math.PI);
@@ -140,9 +141,13 @@ function RPNParser(math, alt)
     addConversion("volume", "cup", ["oz", "floz", "OZ"], 8);
     addConversion("volume", "cup", ["pint", "Pint", "pints", "Pints"], 1/2);
     addConversion("volume", "pint", ["quart", "Quart", "quarts", "Quarts"], 1/2);
-    addConversion("volume", "quart", ["gallon", "Gallon", "gallons", "Gallons"], 1/4);
+    addConversion("volume", "quart", ["gallon", "Gallon", "gallons", "Gallons", "gal", "Gal"], 1/4);
     addConversion("volume", "gallon", ["liter", "Liter", "L", "l"], 3.78541);
     addConversion("volume", "liter", ["mL", "ml"], 1000);
+    addConversion("volume", "liter", ["cubic_m", "m^3", "cubic_meter", "cubic_meters"], 1 / 1000);
+    addConversion("volume", "mL", ["cm^3", "cubic_centimeter", "cubic_centimeters", "cubic_cm"], 1);
+    addConversion("volume", "mL", ["in^3", "cubic_inch", "cubic_in", "cubic_inches"], 0.0610237);
+    addConversion("volume", "in^3", ["ft^3", "cubic_feet", "cubic_foot", "cubic_ft"], 1 / 1728);
 
     makeConversionChain("temp", "F");
     conversions["temp"]["F"] = "";
@@ -152,18 +157,33 @@ function RPNParser(math, alt)
 
     makeConversionChain("time", "s");
     addConversion("time", "s", ["seconds", "second"], 1);
-    addConversion("time", "s", ["ms", "millisecond", "milliseconds"], 1000);
-    addConversion("time", "s", ["m", "minute", "minutes"], 1/60);
-    addConversion("time", "m", ["h", "hour", "hours"], 1/60);
-    addConversion("time", "h", ["d", "day", "days"], 1/24);
-    addConversion("time", "d", ["y", "year", "years"], 1/365);
+    addConversion("time", "s", ["ms", "millisecond", "milliseconds", "Millisecond", "Milliseconds"], 1000);
+    addConversion("time", "s", ["m", "minute", "minutes", "Minute", "Minutes"], 1/60);
+    addConversion("time", "m", ["h", "hour", "hours", "Hour", "Hours"], 1/60);
+    addConversion("time", "h", ["d", "day", "days", "Day", "Days"], 1/24);
+    addConversion("time", "d", ["y", "year", "years", "Years", "Year"], 1/365);
+    addConversion("time", "y", ["decade", "Decade", "Decades", "decades"], 1 / 10);
+    addConversion("time", "decade", ["century", "Century", "centuries", "Centuries"], 1 / 10);
 
     makeConversionChain("mass", "kg");
     addConversion("mass", "kg", "g", 1e3);
+    addConversion("mass", "kg", ["kilogram", "Kilogram", "KG"], 1);
     addConversion("mass", "kg", "lbs", 1 / 0.453592);
+    addConversion("mass", "lbs", ["pounds", "pound", "Pound", "Pounds", "lb", "lbm"], 1);
     addConversion("mass", "lbs", "oz", 16);
     addConversion("mass", "lbs", ["ton", "us_ton", "tons"], 1/2000);
     addConversion("mass", "kg", ["tonne", "metric_ton", "tonnes"], 1/1000);
+
+    makeConversionChain("force", "N");
+    addConversion("force", "N", ["Newton", "newton"], 1);
+    addConversion("force", "N", ["lbs", "lbf", "pound", "Pound"], 0.224809);
+
+    makeConversionChain("energy", "J");
+    addConversion("energy", "J", ["Joule", "joule"], 1);
+    addConversion("energy", "J", ["cal", "calorie", "Gram-Calorie"], 0.239006);
+    addConversion("energy", "cal", ["Cal", "Calorie", "Food-Calorie", "Kilocalorie"], 1 / 1000);
+    addConversion("energy", "J", ["KJ", "Kilojoule", "kilojoule"], 1 / 1000);
+    addConversion("energy", "J", ["BTU", "BritishThermalUnit"], 0.000947817);
 
     makeConversionChain("cpu", "byte");
     duplicateConversion("cpu", "byte", "B");
@@ -527,6 +547,19 @@ function RPNParser(math, alt)
     {
       var a = pop(true);
       push(math.multinomial(a));
+    }
+    else
+    if (word == "sigfig" || word == "sig" || word == "sig_fig")
+    {
+      var a = pop(true);
+      var c = [0, 1];
+      var s = a[0].toPrecision(a[1]).split("e");
+      if(s.length != 1)
+      {
+        c[1] = parseFloat(s[1]);
+      }
+      c[0] = parseFloat(s[0]);
+      push(c);
     }
     else return false;
     return true;
