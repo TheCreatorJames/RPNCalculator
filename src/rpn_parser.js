@@ -161,7 +161,7 @@ function RPNParser(math, alt)
     pullConversions("dist", "metric", "m", "", function(s,o)
     {
       var a = convert("metric", 1, s, o);
-      return [[o+"meter", "meters"], a];
+      return [[o+"meter", o+"meters"], a];
     });
 
     //adds metric abbreviations.
@@ -206,6 +206,12 @@ function RPNParser(math, alt)
     addConversion("temp", "C", "K", "273.15 +");
     addConversion("temp", "F", "R", "459.67 +");
 
+    makeConversionChain("pressure", "atm");
+    addConversion("pressure", "atm", ["Atmosphere", "atmosphere", "atmospheres", "Atmospheres"], 1);
+    addConversion("pressure", "atm", "bar", 1.01325);
+    addConversion("pressure", "atm", ["pa", "Pa", "Pascals", "Pascal"], 101325);
+    addConversion("pressure", "atm", "psi", 14.6959);
+
     makeConversionChain("time", "s");
     addConversion("time", "s", ["seconds", "second"], 1);
     addConversion("time", "s", ["ms", "millisecond", "milliseconds", "Millisecond", "Milliseconds"], 1000);
@@ -223,13 +229,15 @@ function RPNParser(math, alt)
     pullConversions("mass", "metric", "g", "", function(s,o)
     {
       var a = convert("metric", 1, s, o);
-      return [[o+"gram", "grams"], a];
+      return [[o+"gram", o+"grams"], a];
     });
 
     //adds common abbreviations to mass.
     abbreviationQuickFix("mass", "gram", "g");
 
+    addConversion("mass", "g", "amu", 1 / 1.66054e-24);
     addConversion("mass", "kg", "lbs", 1 / 0.453592);
+    addConversion("mass", "lbs", "slug", 1 / 32.174);
     addConversion("mass", "lbs", ["pounds", "pound", "Pound", "Pounds", "lb", "lbm"], 1);
     addConversion("mass", "lbs", "oz", 16);
     addConversion("mass", "lbs", ["ton", "us_ton", "tons"], 1/2000);
@@ -356,6 +364,17 @@ function RPNParser(math, alt)
       if(added_extensions[i](word)) return true;
     }
     return false;
+  }
+
+
+  function chemistryConstants(word)
+  {
+    if(word.toLowerCase() == "avogadro")
+    {
+      push(6.0221409e+23);
+    }
+    else return false;
+    return true;
   }
 
   function physicsConstants(word)
@@ -739,7 +758,7 @@ function RPNParser(math, alt)
         parse(load(word.substring(1)));
       }
       else //various extensions
-      if(basicMathOperations(word) || conversion(word) || physicsConstants(word));
+      if(basicMathOperations(word) || conversion(word) || physicsConstants(word) || chemistryConstants(word));
       else
       if(arithmeticSymbols.indexOf(word) != -1 && arithmetic(word));
       else
